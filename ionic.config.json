@@ -1,0 +1,7 @@
+{
+  "name": "Centurion_Formentera",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "ionic-angular"
+}
