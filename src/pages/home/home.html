@@ -1,14 +1,37 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Centurion</ion-title>
   </ion-navbar>
 </ion-header>
 
+
 <ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+  <p id="logo"><img src="./../../assets/imgs/logo.png" alt="logo"></p>
+  <ion-list>
+    <ion-item>
+      <ion-label fixed>Id Trabajador</ion-label>
+      <ion-input id="idTrabajador" type="number" [(ngModel)]="event.idTrabajadorStorage"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Hora</ion-label>
+      <ion-datetime id="hora" displayFormat="HH:mm" pickerFormat="HH mm" [(ngModel)]="event.timeStarts"></ion-datetime>
+    </ion-item>
+    <ion-item>
+      <ion-label>Tipo</ion-label>
+      <ion-select [(ngModel)]="event.tipoFicha">
+        <ion-option value="Entrada">Entrada</ion-option>
+        <ion-option value="Salida">Salida</ion-option>
+        <ion-option value="Merienda">Merienda</ion-option>
+        <ion-option value="Medico">Médico</ion-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <button ion-button block (click)="enviarCorreo()">
+    Enviar correo
+  </button>
+
 </ion-content>

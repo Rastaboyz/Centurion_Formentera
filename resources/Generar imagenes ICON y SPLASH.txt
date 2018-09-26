@@ -1,0 +1,8 @@
+NOTAS
+Formato: PNG, PSD o AI
+Resolucion: 1024x1024px (icon) y 2732x2732px (splash)
+Ruta: [proyecto]\resources\icon.png y [proyecto]\resources\splash.png
+
+COMANDOS:
+ionic cordova resources android --icon
+ionic cordova resources android --splash
