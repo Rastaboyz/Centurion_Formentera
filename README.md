@@ -14,3 +14,10 @@ https://ionicframework.com/docs/v1/guide/publishing.html
 3.1) Crear clave firmada
 keytool -genkey -v -keystore "[RUTA_PREFERIDA]\my-release-key.keystore" -alias alias_name -keyalg RSA -keysize 2048 -validity 10000
 
+# Plugins
+1) Email Composer
+ionic cordova plugin add cordova-plugin-email-composer
+npm install --save @ionic-native/email-composer
+2) Local Storage
+ionic cordova plugin add cordova-sqlite-storage
+npm install --save @ionic/storage
