@@ -17,7 +17,7 @@ export class HomePage {
   public event = {
     timeStarts: horaActual(),
     idTrabajadorStorage: this.obtenerIdTrabajador(),
-    tipoFicha: "entrada"
+    tipoFicha: "Entrada"
   }
 
   private obtenerIdTrabajador() {
@@ -54,14 +54,15 @@ export class HomePage {
     var lineLengthOrder = lines.slice(0).sort(function (a, b) {
       return b.length - a.length;
     });
-    ctx.canvas.width = ctx.measureText(lineLengthOrder[0]).width + 60; // ANCHURA
+    ctx.canvas.width = ctx.measureText(lineLengthOrder[0]).width + 80; // ANCHURA
     ctx.canvas.height = (lines.length * lineheight);
 
-    // ctx.fillStyle = "#FFF"; // COLOR FONDO
+    // ctx.fillStyle = "#FFF"; 
+    // COLOR FONDO
     var gradientColor = ctx.createLinearGradient(0, 0, 170, 0);
-    gradientColor.addColorStop(0, "black");
-    gradientColor.addColorStop(0.1, "gray");
-    gradientColor.addColorStop(1, "white");
+    gradientColor.addColorStop(0, "#08447F");
+    gradientColor.addColorStop(0.1, "#1088FF");
+    gradientColor.addColorStop(1, "#80C1FF");
     ctx.fillStyle = gradientColor;
 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
