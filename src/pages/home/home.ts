@@ -4,13 +4,15 @@ import { NavController } from 'ionic-angular';
 import { EmailComposer } from '@ionic-native/email-composer';
 import { Storage } from '@ionic/storage';
 
+import { Geolocation } from '@ionic-native/geolocation';
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
 
-  constructor(public navCtrl: NavController, private emailComposer: EmailComposer, private storage: Storage) {
+  constructor(public navCtrl: NavController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
 
   }
 
@@ -97,7 +99,15 @@ export class HomePage {
 
     this.emailComposer.open(email);
   }
+  public obtenerLocalizacion() {
+    this.geolocation.getCurrentPosition().then((response) => {
+      alert(`lat: ${response.coords.latitude} lon: ${response.coords.longitude}`);
+    }).catch((error) => {
+      alert(`[Error geolocalización]: ${error.message}`);
+    });
+  }
 }
+
 
 function addZero(i) {
   if (i < 10) {

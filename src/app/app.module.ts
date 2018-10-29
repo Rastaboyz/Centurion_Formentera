@@ -9,6 +9,7 @@ import { HomePage } from '../pages/home/home';
 
 import { EmailComposer } from '@ionic-native/email-composer';
 import { IonicStorageModule } from '@ionic/storage';
+import { Geolocation } from '@ionic-native/geolocation';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { IonicStorageModule } from '@ionic/storage';
     SplashScreen,
     EmailComposer,
     IonicStorageModule,
+    Geolocation,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
