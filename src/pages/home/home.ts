@@ -13,7 +13,7 @@ import { Geolocation } from '@ionic-native/geolocation';
 export class HomePage {
 
   constructor(public navCtrl: NavController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
-
+    
   }
 
   public event = {
@@ -44,9 +44,10 @@ export class HomePage {
     var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
     var hora = (<HTMLInputElement>document.getElementById("hora").children[0]).innerText
     var tipo = this.event.tipoFicha;
+    var coordenadas = this.obtenerLocalizacion();
 
     // TEXTO A CONVERTIR
-    var info = "ID Trabajador: " + idTrabajador.substring(0, 10) + "\nHora: " + hora + "\nTipo: " + tipo;
+    var info = "ID Trabajador: " + idTrabajador.substring(0, 10) + "\nHora: " + hora + "\nTipo: " + tipo + "\nLat: " + coordenadas[0] + "\nLong: " + coordenadas[1];
 
     var text = info.split("\n").join("\n");
     var x = 12.5; // MARGEN X
@@ -82,6 +83,18 @@ export class HomePage {
 
   }
 
+  public obtenerLocalizacion = function (): Array<number> {
+    let coord: Array<number> = new Array();
+
+    this.geolocation.getCurrentPosition().then((response) => {
+      coord[0] = response.coords.latitude;
+      coord[1] = response.coords.longitude;
+      // alert(`lat: ${response.coords.latitude} lon: ${response.coords.longitude}`);
+    }).catch((error) => {
+      alert(`[Error geolocalización]: ${error.message}`);
+    });
+    return coord;
+  }
 
   public enviarCorreo() {
     var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
@@ -99,15 +112,7 @@ export class HomePage {
 
     this.emailComposer.open(email);
   }
-  public obtenerLocalizacion() {
-    this.geolocation.getCurrentPosition().then((response) => {
-      alert(`lat: ${response.coords.latitude} lon: ${response.coords.longitude}`);
-    }).catch((error) => {
-      alert(`[Error geolocalización]: ${error.message}`);
-    });
-  }
 }
-
 
 function addZero(i) {
   if (i < 10) {
