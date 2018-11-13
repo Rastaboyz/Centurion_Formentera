@@ -25,10 +25,13 @@
         <ion-option value="Medico">Médico</ion-option>
       </ion-select>
     </ion-item>
+    <ion-item text-wrap>
+      NOTA: Para obtener la ID del trabajador, se ha de llamar al 971 77 40 66.
+    </ion-item>
   </ion-list>
 
-  <button ion-button block (click)="enviarCorreo()">
-    Enviar correo
+  <button ion-button block (click)="registrarEnBBDD()">
+    Marcar
   </button>
 
 </ion-content>

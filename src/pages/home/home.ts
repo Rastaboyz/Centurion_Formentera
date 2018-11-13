@@ -1,19 +1,27 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, AlertController } from 'ionic-angular';
 
 import { EmailComposer } from '@ionic-native/email-composer';
 import { Storage } from '@ionic/storage';
 
 import { Geolocation } from '@ionic-native/geolocation';
 
+let coord: Array<number> = new Array();
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
-export class HomePage {
 
-  constructor(public navCtrl: NavController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
-    
+export class HomePage {
+  public errorObtenerPosicion: boolean = false;
+
+
+  constructor(public navCtrl: NavController, private alertCtrl: AlertController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
+    geolocation.getCurrentPosition().catch(() => {
+      this.errorObtenerPosicion = true;
+    });
+    this.obtenerLocalizacion();
   }
 
   public event = {
@@ -42,12 +50,11 @@ export class HomePage {
     var img = <HTMLImageElement>document.getElementById('image');
 
     var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
-    var hora = (<HTMLInputElement>document.getElementById("hora").children[0]).innerText
+    var hora = (<HTMLInputElement>document.getElementById("hora").children[0]).innerText;
     var tipo = this.event.tipoFicha;
-    var coordenadas = this.obtenerLocalizacion();
 
     // TEXTO A CONVERTIR
-    var info = "ID Trabajador: " + idTrabajador.substring(0, 10) + "\nHora: " + hora + "\nTipo: " + tipo + "\nLat: " + coordenadas[0] + "\nLong: " + coordenadas[1];
+    var info = "ID Trabajador: " + idTrabajador.substring(0, 10) + "\nHora: " + hora + "\nTipo: " + tipo + "\nLat: " + coord[0] + "\nLong: " + coord[1];
 
     var text = info.split("\n").join("\n");
     var x = 12.5; // MARGEN X
@@ -83,34 +90,72 @@ export class HomePage {
 
   }
 
-  public obtenerLocalizacion = function (): Array<number> {
-    let coord: Array<number> = new Array();
-
+  public obtenerLocalizacion() {
     this.geolocation.getCurrentPosition().then((response) => {
-      coord[0] = response.coords.latitude;
-      coord[1] = response.coords.longitude;
-      // alert(`lat: ${response.coords.latitude} lon: ${response.coords.longitude}`);
+      setTimeout(function () {
+        coord[0] = response.coords.latitude;
+        coord[1] = response.coords.longitude;
+        // alert(`lat: ${this.coord[0]} lon: ${this.coord[1]}`);
+      }, 1000);
     }).catch((error) => {
-      alert(`[Error geolocalización]: ${error.message}`);
+      let alert = this.alertCtrl.create({
+        title: "Error de geolocalización",
+        subTitle: "Mensaje: " + error.message,
+        buttons: ['OK']
+      });
+      alert.present();
     });
-    return coord;
   }
 
   public enviarCorreo() {
-    var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
-    this.storage.set('idTrabajador', idTrabajador);
-    var imagen = this.generarImagen();
+    if (!this.errorObtenerPosicion) {
+      var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
+      this.storage.set('idTrabajador', idTrabajador);
+      var imagen = this.generarImagen();
 
-    var email = {
-      app: 'gmail',
-      to: 'centurion.formentera@sd-a.com',
-      // cc: 'tomeu@sd-a.com',
-      attachments: [imagen],
-      subject: 'Control horario',
-      isHtml: true
+      var email = {
+        app: 'gmail',
+        to: 'centurion.formentera@sd-a.com',
+        // cc: 'tomeu@sd-a.com',
+        attachments: [imagen],
+        subject: 'Control horario',
+        isHtml: true
+      }
+
+      this.emailComposer.open(email);
     }
+  }
 
-    this.emailComposer.open(email);
+  public registrarEnBBDD() {
+    if (!this.errorObtenerPosicion) {
+      var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
+      this.storage.set('idTrabajador', idTrabajador);
+      var hora = (<HTMLInputElement>document.getElementById("hora").children[0]).innerText;
+      var tipo = this.event.tipoFicha.toString();
+      var latitud = coord[0].toString();
+      var longitude = coord[1].toString();
+
+      var marcaje = {
+        idTrabajador: idTrabajador,
+        hora: hora,
+        tipo: tipo,
+        latitud: latitud,
+        longitude: longitude
+      };
+
+      var xhr = new XMLHttpRequest();
+      var url = "";
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(marcaje));
+    } else {
+      let alert = this.alertCtrl.create({
+        title: "Error",
+        subTitle: "Hubo algún problema al obtener la localización. Cierre la aplicación y vuelva a intentarlo.",
+        buttons: ['OK']
+      });
+      alert.present();
+    }
   }
 }
 
