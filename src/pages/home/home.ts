@@ -7,6 +7,7 @@ import { Storage } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
 
 let coord: Array<number> = new Array();
+let errorObtenerPosicion: boolean = true;
 
 @Component({
   selector: 'page-home',
@@ -14,14 +15,36 @@ let coord: Array<number> = new Array();
 })
 
 export class HomePage {
-  public errorObtenerPosicion: boolean = false;
-
-
+  //public localizacionAceptada: boolean = false;
   constructor(public navCtrl: NavController, private alertCtrl: AlertController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
-    geolocation.getCurrentPosition().catch(() => {
-      this.errorObtenerPosicion = true;
-    });
-    this.obtenerLocalizacion();
+    /*do {
+      if(!this.localizacionAceptada){
+        geolocation.getCurrentPosition().then(()=>{
+          this.localizacionAceptada = true;
+        }).catch(() => {
+          this.errorObtenerPosicion = true;
+        });
+      }
+    }
+    while (!this.errorObtenerPosicion && this.localizacionAceptada){
+      this.obtenerLocalizacion();
+    }*/
+    var setGeolocalization = setInterval(obtenerGeolocalizacion, 3000);
+    function obtenerGeolocalizacion() {
+      geolocation.getCurrentPosition().then((response) => {
+        errorObtenerPosicion = false;
+        coord[0] = response.coords.latitude;
+        coord[1] = response.coords.longitude;
+        clearInterval(setGeolocalization);
+      }).catch(() => {
+        let alert = alertCtrl.create({
+          title: "Error",
+          subTitle: "Hubo algún problema al obtener la localización. Cierre la aplicación y vuelva a intentarlo.",
+          buttons: ['OK']
+        });
+        alert.present();
+      });
+    }
   }
 
   public event = {
@@ -92,11 +115,9 @@ export class HomePage {
 
   public obtenerLocalizacion() {
     this.geolocation.getCurrentPosition().then((response) => {
-      setTimeout(function () {
-        coord[0] = response.coords.latitude;
-        coord[1] = response.coords.longitude;
-        // alert(`lat: ${this.coord[0]} lon: ${this.coord[1]}`);
-      }, 1000);
+      coord[0] = response.coords.latitude;
+      coord[1] = response.coords.longitude;
+      // alert(`lat: ${this.coord[0]} lon: ${this.coord[1]}`);
     }).catch((error) => {
       let alert = this.alertCtrl.create({
         title: "Error de geolocalización",
@@ -108,46 +129,50 @@ export class HomePage {
   }
 
   public enviarCorreo() {
-    if (!this.errorObtenerPosicion) {
+    if (!errorObtenerPosicion) {
       var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
       this.storage.set('idTrabajador', idTrabajador);
       var imagen = this.generarImagen();
 
-      var email = {
-        app: 'gmail',
-        to: 'centurion.formentera@sd-a.com',
-        // cc: 'tomeu@sd-a.com',
-        attachments: [imagen],
-        subject: 'Control horario',
-        isHtml: true
-      }
+      if (imagen != "") {
+        var email = {
+          app: 'gmail',
+          to: 'centurion.formentera@sd-a.com',
+          // cc: 'tomeu@sd-a.com',
+          attachments: [imagen],
+          subject: 'Control horario',
+          isHtml: true
+        }
 
-      this.emailComposer.open(email);
+        this.emailComposer.open(email);
+      }
+    } else {
+      let alert = this.alertCtrl.create({
+        title: "Error",
+        subTitle: "Debe aceptar los permisos de localización. Reinicie la aplicación.",
+        buttons: ['OK']
+      });
+      alert.present();
     }
   }
 
   public registrarEnBBDD() {
-    if (!this.errorObtenerPosicion) {
+    if (!errorObtenerPosicion) {
       var idTrabajador = (<HTMLInputElement>document.getElementById("idTrabajador").children[0]).value;
       this.storage.set('idTrabajador', idTrabajador);
+      var fecha = new Date().toLocaleDateString();
       var hora = (<HTMLInputElement>document.getElementById("hora").children[0]).innerText;
-      var tipo = this.event.tipoFicha.toString();
+      // var tipo = this.event.tipoFicha.toString();
       var latitud = coord[0].toString();
       var longitude = coord[1].toString();
 
-      var marcaje = {
-        idTrabajador: idTrabajador,
-        hora: hora,
-        tipo: tipo,
-        latitud: latitud,
-        longitude: longitude
-      };
-
-      var xhr = new XMLHttpRequest();
-      var url = "";
-      xhr.open("POST", url, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(JSON.stringify(marcaje));
+      if (validarCampo(idTrabajador, this.alertCtrl)) {
+        var xhr = new XMLHttpRequest();
+        var url = "http://formentera.centurion.sd-a.com/API/_CrearMarcaje.aspx?id=" + idTrabajador + "&idTerminal=11&fecha=" + fecha + "&hora=" + hora + "&lat=" + latitud + "&lon=" + longitude;
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader('Content-Type', 'text/html');
+        xhr.send();
+      }
     } else {
       let alert = this.alertCtrl.create({
         title: "Error",
@@ -156,6 +181,20 @@ export class HomePage {
       });
       alert.present();
     }
+  }
+}
+
+function validarCampo(IdTrabajador: string, alertCtrl: AlertController) {
+  if (IdTrabajador == "" || IdTrabajador.length == 0) {
+    let alert = alertCtrl.create({
+      title: "Falta de infomación",
+      subTitle: "No se ha especificado el ID del trabajador.",
+      buttons: ['OK']
+    });
+    alert.present();
+    return false;
+  } else {
+    return true;
   }
 }
 
