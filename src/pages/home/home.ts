@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, AlertController } from 'ionic-angular';
+import { Http, Headers, RequestOptions } from '@angular/http';
 
 import { EmailComposer } from '@ionic-native/email-composer';
 import { Storage } from '@ionic/storage';
@@ -16,7 +17,7 @@ let errorObtenerPosicion: boolean = true;
 
 export class HomePage {
   //public localizacionAceptada: boolean = false;
-  constructor(public navCtrl: NavController, private alertCtrl: AlertController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
+  constructor(public navCtrl: NavController, private http: Http, private alertCtrl: AlertController, private emailComposer: EmailComposer, private storage: Storage, public geolocation: Geolocation) {
     /*do {
       if(!this.localizacionAceptada){
         geolocation.getCurrentPosition().then(()=>{
@@ -167,11 +168,25 @@ export class HomePage {
       var longitude = coord[1].toString();
 
       if (validarCampo(idTrabajador, this.alertCtrl)) {
+        let header = new Headers({
+          'Content-Type': 'text/html',
+        });
+        //        let options = new RequestOptions({ headers: header });
+        let options = new RequestOptions({ headers: header });
+        var url = "http://formentera.centurion.sd-a.com/API/_CrearMarcaje.aspx?id=" + idTrabajador + "&idTerminal=11&fecha=" + fecha + "&hora=" + hora + "&lat=" + latitud + "&lon=" + longitude;
+
+        this.http.post(url, '', options).toPromise().then((response) => {
+          console.log('RESPUESTA: ' + response);
+        }).catch((error) => {
+          console.log("ERROR: " + error);
+          console.log("ERROR STATUS: " + error.STATUS);
+        });
+        /*
         var xhr = new XMLHttpRequest();
         var url = "http://formentera.centurion.sd-a.com/API/_CrearMarcaje.aspx?id=" + idTrabajador + "&idTerminal=11&fecha=" + fecha + "&hora=" + hora + "&lat=" + latitud + "&lon=" + longitude;
         xhr.open("POST", url, true);
         xhr.setRequestHeader('Content-Type', 'text/html');
-        xhr.send();
+        xhr.send();*/
       }
     } else {
       let alert = this.alertCtrl.create({
